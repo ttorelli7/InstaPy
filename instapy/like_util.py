@@ -138,6 +138,9 @@ def get_links_for_location(
         )
         possible_posts = None
 
+    if skip_top_posts:
+        amount = amount + 9
+
     logger.info(
         "desired amount: {}  |  top posts [{}]: {}  |  possible posts: "
         "{}".format(
@@ -233,6 +236,9 @@ def get_links_for_location(
         raise
 
     sleep(4)
+
+    if skip_top_posts:
+        del links[0:9]
 
     return links[:amount]
 
@@ -487,7 +493,12 @@ def get_links_for_username(
 
     while len(links) < amount:
         initial_links = links
-        browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        while True:
+            try:
+                browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                break
+            except Exception as err:
+                print("--> Unexpected error! Trying again...".format(err))
         # update server calls after a scroll request
         update_activity(browser, state=None)
         sleep(0.66)

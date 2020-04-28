@@ -162,6 +162,7 @@ def check_browser(browser, logfolder, logger, proxy_address):
     )
 
     # check connection status
+    '''
     try:
         logger.info("-- Connection Checklist [1/3] (Internet Connection Status)")
         browser.get("view-source:https://ip4.seeip.org/geoip")
@@ -206,8 +207,10 @@ def check_browser(browser, logfolder, logger, proxy_address):
             logger=logger,
         )
         return False
-
+    '''
+    
     # check Instagram.com status
+    """
     try:
         logger.info("-- Connection Checklist [2/3] (Instagram Server Status)")
         browser.get("https://isitdownorjust.me/instagram-com/")
@@ -244,6 +247,7 @@ def check_browser(browser, logfolder, logger, proxy_address):
             logger=logger,
         )
         return False
+    """
 
     # check if hide-selenium extension is running
     logger.info("-- Connection Checklist [3/3] (Hide Selenium Extension)")
@@ -277,7 +281,8 @@ def login_user(
         if not check_browser(browser, logfolder, logger, proxy_address):
             return False
 
-    ig_homepage = "https://www.instagram.com"
+    #ig_homepage = "https://www.instagram.com"
+    ig_homepage = "https://www.instagram.com/accounts/login/"
     web_address_navigator(browser, ig_homepage)
     cookie_loaded = False
 

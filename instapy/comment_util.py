@@ -127,7 +127,9 @@ def comment_image(browser, username, comments, blacklist, logger, logfolder):
             "\t~encountered `InvalidElementStateException` :/"
         )
         return False, "invalid element state"
-
+    except Exception as err:
+        print("--> Unexpected error! Trying again...".format(err))
+        
     logger.info("--> Commented: {}".format(rand_comment.encode("utf-8")))
     Event().commented(username)
 

@@ -23,7 +23,6 @@ from .file_manager import use_assets
 from .settings import Settings
 from .time_util import sleep
 
-
 def get_geckodriver():
     # prefer using geckodriver from path
     gecko_path = shutil.which("geckodriver") or shutil.which("geckodriver.exe")
@@ -126,6 +125,7 @@ def set_selenium_local_session(
 
     browser.implicitly_wait(page_delay)
 
+    sleep(1)
     # set mobile viewport (iPhone X)
     browser.set_window_size(375, 812)
 
