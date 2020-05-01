@@ -5971,6 +5971,8 @@ class InstaPy:
                 except NoSuchElementException:
                     self.logger.info("No stories skipping this user")
                     continue
+                except Exception as err:
+                    print("--> Unexpected error! ".format(err))
                 if reels > 0:
                     self.stories_watched += 1
                     self.reels_watched += reels
