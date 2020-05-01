@@ -116,6 +116,7 @@ class InstaPy:
         split_db: bool = False,
         bypass_security_challenge_using: str = "email",
         want_check_browser: bool = True,
+        save_account_progress: bool = True
     ):
         print("InstaPy Version: {}".format(__version__))
         cli_args = parse_cli_args()
@@ -147,6 +148,7 @@ class InstaPy:
         self.page_delay = page_delay
         self.disable_image_load = disable_image_load
         self.bypass_security_challenge_using = bypass_security_challenge_using
+        self.save_account_progress = save_account_progress
 
         # choose environment over static typed credentials
         self.username = os.environ.get("INSTA_USER") or username
@@ -167,6 +169,7 @@ class InstaPy:
         self.comments = ["Cool!", "Nice!", "Looks good!"]
         self.photo_comments = []
         self.video_comments = []
+        self.story_comments = []
 
         self.do_reply_to_comments = False
         self.reply_to_comments_percent = 0
@@ -208,7 +211,7 @@ class InstaPy:
         self.smart_hashtags = []
         self.smart_location_hashtags = []
 
-        self.dont_like = ["sex", "nsfw"]
+        self.dont_like = []
         self.mandatory_words = []
         self.ignore_if_contains = []
         self.ignore_users = []
@@ -425,20 +428,21 @@ class InstaPy:
         message = "Logged in successfully!"
         highlight_print(self.username, message, "login", "info", self.logger)
         # try to save account progress
-        try:
-            save_account_progress(self.browser, self.username, self.logger)
-        except Exception as e:
-            self.logger.warning(
-                "Unable to save account progress, skipping data update " + str(e)
-            )
+        if(self.save_account_progress):
+            try:
+                save_account_progress(self.browser, self.username, self.logger)
+            except Exception as e:
+                self.logger.warning(
+                    "Unable to save account progress, skipping data update " + str(e)
+                )
 
-        # logs only followers/following numbers when able to login,
-        # to speed up the login process and avoid loading profile
-        # page (meaning less server calls)
-        self.followed_by = log_follower_num(self.browser, self.username, self.logfolder)
-        self.following_num = log_following_num(
-            self.browser, self.username, self.logfolder
-        )
+            # logs only followers/following numbers when able to login,
+            # to speed up the login process and avoid loading profile
+            # page (meaning less server calls)
+            self.followed_by = log_follower_num(self.browser, self.username, self.logfolder)
+            self.following_num = log_following_num(
+                self.browser, self.username, self.logfolder
+            )
 
         return self
 
@@ -506,6 +510,28 @@ class InstaPy:
             self.comments = comments
         else:
             attr = "{}_comments".format(media.lower())
+            setattr(self, attr, comments)
+
+        return self
+
+    def set_story_comments(self, comments: list = [], media: str = None):
+        """
+        Sets the possible posted comments.
+        'What an amazing shot :heart_eyes: !' is an example for using emojis.
+        """
+        if self.aborting:
+            return self
+
+        if media not in [None, MEDIA_PHOTO, MEDIA_VIDEO]:
+            self.logger.warning('Unkown media type! Treating as "any".')
+            media = None
+
+        self.story_comments = comments
+
+        if media is None:
+            self.story_comments = comments
+        else:
+            attr = "{}_story".format(media.lower())
             setattr(self, attr, comments)
 
         return self
@@ -2685,7 +2711,7 @@ class InstaPy:
 
             # watch story if present
             if story:
-                self.story_by_users([username])
+                self.story_by_users([username], comments=self.story_comments)
 
             if liked_img < amount:
                 self.logger.info("-------------")
@@ -5908,7 +5934,7 @@ class InstaPy:
 
                 try:
                     reels = watch_story(
-                        self.browser, tag, self.logger, "tag", self.story_simulate
+                        self.browser, tag, self.logger, "tag", self.story_simulate, self.story_comments
                     )
                 except NoSuchElementException:
                     self.logger.info("No stories skipping this tag")
@@ -5940,7 +5966,7 @@ class InstaPy:
 
                 try:
                     reels = watch_story(
-                        self.browser, user, self.logger, "user", self.story_simulate
+                        self.browser, user, self.logger, "user", self.story_simulate, comments=self.story_comments
                     )
                 except NoSuchElementException:
                     self.logger.info("No stories skipping this user")

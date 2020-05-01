@@ -61,6 +61,8 @@ default_profile_pic_instagram = [
 
 next_screenshot = 1
 
+page_not_found_count = 0
+
 
 def is_private_profile(browser, logger, following=True):
     is_private = None
@@ -1811,6 +1813,8 @@ def is_page_available(browser, logger):
     """ Check if the page is available and valid """
     expected_keywords = ["Page Not Found", "Content Unavailable"]
     page_title = get_page_title(browser, logger)
+    
+    global page_not_found_count
 
     if any(keyword in page_title for keyword in expected_keywords):
         reload_webpage(browser)
@@ -1822,6 +1826,11 @@ def is_page_available(browser, logger):
                     "The page isn't available!\t~the link may be broken, "
                     "or the page may have been removed..."
                 )
+                page_not_found_count += 1
+                if page_not_found_count == 3:
+                    page_not_found_count = 0
+                    print("--> The same error occurred many times! ~ sleeping a bit :D")
+                    sleep(600)
 
             elif "Content Unavailable" in page_title:
                 logger.warning(
@@ -1830,6 +1839,7 @@ def is_page_available(browser, logger):
 
             return False
 
+        page_not_found_count = 0
     return True
 
 

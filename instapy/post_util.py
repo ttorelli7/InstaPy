@@ -22,6 +22,8 @@ def post_media(browser, file="", caption=""):
 def post_media_by_path(browser, path=""):
     paths = sorted(Path(path).iterdir(), key=os.path.dirname)
     for path in paths:
+        if path.is_file():
+            continue
         subpaths = sorted(Path(path).iterdir(), key=os.path.dirname)
         for subpath in subpaths:
             if subpath.is_file():
