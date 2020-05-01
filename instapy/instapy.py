@@ -2711,7 +2711,7 @@ class InstaPy:
 
             # watch story if present
             if story:
-                self.story_by_users([username], comments=self.story_comments)
+                self.story_by_users([username])
 
             if liked_img < amount:
                 self.logger.info("-------------")
