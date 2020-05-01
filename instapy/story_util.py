@@ -148,7 +148,6 @@ def get_story_data(browser, elem, action_type, logger, simulate=False, comments:
                 logger.info("Watching stories...")
                 for item in response["data"]["reels_media"][0]["items"]:
                     count += 1
-                    #if False:
                     if item["taken_at_timestamp"] <= seen:
                         continue
                     else:
