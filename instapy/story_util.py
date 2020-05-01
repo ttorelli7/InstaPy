@@ -182,11 +182,24 @@ def reply_story(browser, comments: list = None):
     try:
         rand_comment = random.choice(comments)
         comment_input = browser.find_element_by_xpath("//textarea[@placeholder='Send Message']")
-        comment_input.send_keys(rand_comment)
+        click_element(browser, comment_input)
+
+        reaction_button = ''
+        reactions = ["😂", "😮", "😍", "😢", "👏", "🔥", "🎉", "💯"]
+        index = 0
+        for emoji in reactions:
+            index += 1
+            if rand_comment == emoji:
+                reaction_button = browser.find_element_by_xpath("/html/body/div[1]/section/div/div/section/div[2]/footer/div/div[2]/div/div/div[" + str(index) + "]/button/span")
+        
         time.sleep(1)
-        comment_button = browser.find_element_by_xpath("//button[text()='Send']")
-        comment_button.click()
-    except NoSuchElementException:
+        if reaction_button:
+            click_element(browser, reaction_button)
+        else:
+            comment_input.send_keys(rand_comment)
+            comment_button = browser.find_element_by_xpath("//button[text()='Send']")
+            click_element(browser, comment_button)
+    except NoSuchElementException as err:
         print("--> Unable to reply story...")
 
 def watch_story(browser, elem, logger, action_type, simulate=False, comments: list = None):
