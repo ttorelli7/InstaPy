@@ -1829,7 +1829,7 @@ def is_page_available(browser, logger):
                 page_not_found_count += 1
                 if page_not_found_count == 3:
                     page_not_found_count = 0
-                    print("--> The same error occurred many times! ~ sleeping a bit :D")
+                    print("--> The same error has occurred many times! ~ sleeping a bit :D")
                     sleep(600)
 
             elif "Content Unavailable" in page_title:

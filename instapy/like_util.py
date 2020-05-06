@@ -138,9 +138,6 @@ def get_links_for_location(
         )
         possible_posts = None
 
-    if skip_top_posts:
-        amount = amount + 9
-
     logger.info(
         "desired amount: {}  |  top posts [{}]: {}  |  possible posts: "
         "{}".format(
@@ -150,6 +147,9 @@ def get_links_for_location(
             possible_posts,
         )
     )
+
+    if skip_top_posts:
+        amount = amount + 9
 
     if possible_posts is not None:
         possible_posts = (
@@ -313,9 +313,6 @@ def get_links_for_tag(browser, tag, amount, skip_top_posts, randomize, media, lo
             )
             possible_posts = None
 
-    if skip_top_posts:
-        amount = amount + 9
-
     logger.info(
         "desired amount: {}  |  top posts [{}]: {}  |  possible posts: "
         "{}".format(
@@ -325,6 +322,9 @@ def get_links_for_tag(browser, tag, amount, skip_top_posts, randomize, media, lo
             possible_posts,
         )
     )
+
+    if skip_top_posts:
+        amount = amount + 9
 
     if possible_posts is not None:
         amount = possible_posts if amount > possible_posts else amount
@@ -887,7 +887,8 @@ def get_links(browser, page, logger, media, element):
 
                         if post_category in media:
                             links.append(post_href)
-                except WebDriverException:
+                except WebDriverException as err:
+                    print(err)
                     logger.info(
                         "Cannot detect post media type. Skip {}".format(post_href)
                     )
