@@ -98,6 +98,7 @@ def is_private_profile(browser, logger, following=True):
 
 
 def validate_username(
+    self,
     browser,
     username_or_link,
     own_username,
@@ -178,20 +179,23 @@ def validate_username(
         )
         return False, inap_msg
 
-    blacklist_file = "{}blacklist.csv".format(logfolder)
-    blacklist_file_exists = os.path.isfile(blacklist_file)
-    if blacklist_file_exists:
-        with open("{}blacklist.csv".format(logfolder), "rt") as f:
-            reader = csv.reader(f, delimiter=",")
-            for row in reader:
-                for field in row:
-                    if field == username:
-                        logger.info("Username in BlackList: {} ".format(username))
-                        return (
-                            False,
-                            "---> {} is in blacklist  ~skipping "
-                            "user\n".format(username),
-                        )
+    if blacklist["enabled"] is True:
+        blacklist_file = "{}blacklist.csv".format(logfolder)
+        blacklist_file_exists = os.path.isfile(blacklist_file)
+        if blacklist_file_exists:
+            with open("{}blacklist.csv".format(logfolder), "rt") as f:
+                reader = csv.reader(f, delimiter=",")
+                for row in reader:
+                    for field in row:
+                        if field == username:
+                            self.jumps["consequent"]["blacklist"] += 1
+                            logger.info("Username in BlackList: {} ".format(username))
+                            return (
+                                False,
+                                "---> {} is in blacklist  ~skipping "
+                                "user\n".format(username),
+                            )
+    self.jumps["consequent"]["blacklist"] = 0
 
     # Checks the potential of target user by relationship status in order
     # to delimit actions within the desired boundary

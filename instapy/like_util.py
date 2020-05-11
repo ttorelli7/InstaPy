@@ -148,8 +148,9 @@ def get_links_for_location(
         )
     )
 
+    find_amount = amount
     if skip_top_posts:
-        amount = amount + 9
+        find_amount = find_amount + 9
 
     if possible_posts is not None:
         possible_posts = (
@@ -168,7 +169,7 @@ def get_links_for_location(
     nap = 1.5
     put_sleep = 0
     try:
-        while filtered_links in range(1, amount):
+        while filtered_links in range(1, find_amount):
             if sc_rolled > 100:
                 logger.info("Scrolled too much! ~ sleeping a bit :>")
                 sleep(600)
@@ -323,8 +324,9 @@ def get_links_for_tag(browser, tag, amount, skip_top_posts, randomize, media, lo
         )
     )
 
+    find_amount = amount
     if skip_top_posts:
-        amount = amount + 9
+        find_amount = find_amount + 9
 
     if possible_posts is not None:
         amount = possible_posts if amount > possible_posts else amount
@@ -340,7 +342,7 @@ def get_links_for_tag(browser, tag, amount, skip_top_posts, randomize, media, lo
     nap = 1.5
     put_sleep = 0
     try:
-        while filtered_links in range(1, amount):
+        while filtered_links in range(1, find_amount):
             if sc_rolled > 100:
                 logger.info("Scrolled too much! ~ sleeping a bit :>")
                 sleep(600)

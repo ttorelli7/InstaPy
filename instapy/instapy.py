@@ -277,8 +277,8 @@ class InstaPy:
         # hold the consecutive jumps and set max of it used with QS to break
         # loops
         self.jumps = {
-            "consequent": {"likes": 0, "comments": 0, "follows": 0, "unfollows": 0},
-            "limit": {"likes": 7, "comments": 3, "follows": 5, "unfollows": 4},
+            "consequent": {"likes": 0, "comments": 0, "follows": 0, "unfollows": 0, "blacklist": 0},
+            "limit": {"likes": 5, "comments": 3, "follows": 5, "unfollows": 4, "blacklist": 15},
         }
 
         self.allowed_pod_topics = [
@@ -1332,6 +1332,7 @@ class InstaPy:
     def validate_user_call(self, user_name: str):
         """ Short call of validate_username() function """
         validation, details = validate_username(
+            self,
             self.browser,
             user_name,
             self.username,
@@ -1465,6 +1466,7 @@ class InstaPy:
         commented = 0
         followed = 0
         not_valid_users = 0
+        break_loop = False
 
         locations = locations or []
         self.quotient_breach = False
@@ -1498,6 +1500,15 @@ class InstaPy:
                     self.quotient_breach = True
                     # reset jump counter after a breach report
                     self.jumps["consequent"]["likes"] = 0
+                    break
+                if self.jumps["consequent"]["blacklist"] >= self.jumps["limit"]["blacklist"]:
+                    self.logger.warning(
+                        "--> Blacklist quotient reached its peak!\t~leaving "
+                        "Like-By-Locations activity\n"
+                    )
+                    self.quotient_breach = True
+                    # reset jump counter after a breach report
+                    self.jumps["consequent"]["blacklist"] = 0
                     break
 
                 self.logger.info("Like# [{}/{}]".format(i + 1, len(links)))
@@ -1644,8 +1655,10 @@ class InstaPy:
 
                                 elif msg == "already liked":
                                     already_liked += 1
+                                    self.jumps["consequent"]["likes"] += 1
 
                                 elif msg == "block on likes":
+                                    break_loop = True
                                     break
 
                                 elif msg == "jumped":
@@ -1663,6 +1676,8 @@ class InstaPy:
                         )
                         inap_img += 1
 
+                    if break_loop:
+                        break
                 except NoSuchElementException as err:
                     self.logger.error("Invalid Page: {}".format(err))
 
@@ -1907,6 +1922,7 @@ class InstaPy:
         commented = 0
         followed = 0
         not_valid_users = 0
+        break_loop = False
 
         # if smart hashtag is enabled
         if use_smart_hashtags is True and self.smart_hashtags != []:
@@ -1951,6 +1967,15 @@ class InstaPy:
                     self.quotient_breach = True
                     # reset jump counter after a breach report
                     self.jumps["consequent"]["likes"] = 0
+                    break
+                if self.jumps["consequent"]["blacklist"] >= self.jumps["limit"]["blacklist"]:
+                    self.logger.warning(
+                        "--> Blacklist quotient reached its peak!\t~leaving "
+                        "Like-By-Tags activity\n"
+                    )
+                    self.quotient_breach = True
+                    # reset jump counter after a breach report
+                    self.jumps["consequent"]["blacklist"] = 0
                     break
 
                 self.logger.info("Like# [{}/{}]".format(i + 1, len(links)))
@@ -2112,8 +2137,10 @@ class InstaPy:
 
                                 elif msg == "already liked":
                                     already_liked += 1
+                                    self.jumps["consequent"]["likes"] += 1
 
                                 elif msg == "block on likes":
+                                    break_loop = True
                                     break
 
                                 elif msg == "jumped":
@@ -2130,6 +2157,9 @@ class InstaPy:
                             "--> Image not liked: {}".format(reason.encode("utf-8"))
                         )
                         inap_img += 1
+
+                    if break_loop:
+                        break
 
                 except NoSuchElementException as err:
                     self.logger.error("Invalid Page: {}".format(err))
@@ -2184,6 +2214,7 @@ class InstaPy:
         commented = 0
         followed = 0
         not_valid_users = 0
+        break_loop = False
 
         usernames = usernames or []
         self.quotient_breach = False
@@ -2268,6 +2299,15 @@ class InstaPy:
                     self.quotient_breach = True
                     # reset jump counter after a breach report
                     self.jumps["consequent"]["likes"] = 0
+                    break
+                if self.jumps["consequent"]["blacklist"] >= self.jumps["limit"]["blacklist"]:
+                    self.logger.warning(
+                        "--> Blacklist quotient reached its peak!\t~leaving "
+                        "Like-By-Users activity\n"
+                    )
+                    self.quotient_breach = True
+                    # reset jump counter after a breach report
+                    self.jumps["consequent"]["blacklist"] = 0
                     break
 
                 self.logger.info("Post [{}/{}]".format(liked_img + 1, amount))
@@ -2371,8 +2411,10 @@ class InstaPy:
 
                         elif msg == "already liked":
                             already_liked += 1
+                            self.jumps["consequent"]["likes"] += 1
 
                         elif msg == "block on likes":
+                            break_loop = True
                             break
 
                         elif msg == "jumped":
@@ -2385,6 +2427,9 @@ class InstaPy:
                             "--> Image not liked: {}".format(reason.encode("utf-8"))
                         )
                         inap_img += 1
+
+                    if break_loop:
+                        break
 
                 except NoSuchElementException as err:
                     self.logger.error("Invalid Page: {}".format(err))
@@ -2446,6 +2491,7 @@ class InstaPy:
         followed = 0
         already_followed = 0
         not_valid_users = 0
+        break_loop = False
 
         self.quotient_breach = False
 
@@ -2544,6 +2590,15 @@ class InstaPy:
                     self.quotient_breach = True
                     # reset jump counter after a breach report
                     self.jumps["consequent"]["likes"] = 0
+                    break
+                if self.jumps["consequent"]["blacklist"] >= self.jumps["limit"]["blacklist"]:
+                    self.logger.warning(
+                        "--> Blacklist quotient reached its peak!\t~leaving "
+                        "Interact-By-Users activity\n"
+                    )
+                    self.quotient_breach = True
+                    # reset jump counter after a breach report
+                    self.jumps["consequent"]["blacklist"] = 0
                     break
 
                 # Check if target has reached
@@ -2667,8 +2722,10 @@ class InstaPy:
 
                             elif msg == "already liked":
                                 already_liked += 1
+                                self.jumps["consequent"]["likes"] += 1
 
                             elif msg == "block on likes":
+                                break_loop = True
                                 break
 
                             elif msg == "jumped":
@@ -2681,6 +2738,9 @@ class InstaPy:
                             "--> Image not liked: {}".format(reason.encode("utf-8"))
                         )
                         inap_img += 1
+
+                    if break_loop:
+                        break
 
                 except NoSuchElementException as err:
                     self.logger.info("Invalid Page: {}".format(err))
@@ -2780,6 +2840,7 @@ class InstaPy:
         followed = 0
         already_followed = 0
         not_valid_users = 0
+        break_loop = False
 
         self.quotient_breach = False
 
@@ -2870,6 +2931,15 @@ class InstaPy:
                     self.quotient_breach = True
                     # reset jump counter after a breach report
                     self.jumps["consequent"]["likes"] = 0
+                    break
+                if self.jumps["consequent"]["blacklist"] >= self.jumps["limit"]["blacklist"]:
+                    self.logger.warning(
+                        "--> Blacklist quotient reached its peak!\t~leaving "
+                        "Interact-By-Users activity\n"
+                    )
+                    self.quotient_breach = True
+                    # reset jump counter after a breach report
+                    self.jumps["consequent"]["blacklist"] = 0
                     break
 
                 # Check if target has reached
@@ -2999,8 +3069,10 @@ class InstaPy:
 
                             elif msg == "already liked":
                                 already_liked += 1
+                                self.jumps["consequent"]["likes"] += 1
 
                             elif msg == "block on likes":
+                                break_loop = True
                                 break
 
                             elif msg == "jumped":
@@ -3013,6 +3085,9 @@ class InstaPy:
                             "--> Image not liked: {}".format(reason.encode("utf-8"))
                         )
                         inap_img += 1
+
+                    if break_loop:
+                        break
 
                 except NoSuchElementException as err:
                     self.logger.info("Invalid Page: {}".format(err))
@@ -3979,6 +4054,7 @@ class InstaPy:
         num_of_search = 0
         not_valid_users = 0
         link_not_found_loop_error = 0
+        break_loop = False
 
         history = []
         self.quotient_breach = False
@@ -4024,6 +4100,15 @@ class InstaPy:
                     self.quotient_breach = True
                     # reset jump counter after a breach report
                     self.jumps["consequent"]["likes"] = 0
+                    break
+                if self.jumps["consequent"]["blacklist"] >= self.jumps["limit"]["blacklist"]:
+                    self.logger.warning(
+                        "--> Blacklist quotient reached its peak!\t~leaving "
+                        "\t~leaving Like-By-Feed activity\n"
+                    )
+                    self.quotient_breach = True
+                    # reset jump counter after a breach report
+                    self.jumps["consequent"]["blacklist"] = 0
                     break
 
                 if randomize and random.choice([True, False]):
@@ -4211,8 +4296,10 @@ class InstaPy:
 
                                 elif msg == "already liked":
                                     already_liked += 1
+                                    self.jumps["consequent"]["likes"] += 1
 
                                 elif msg == "block on likes":
+                                    break_loop = True
                                     break
 
                                 elif msg == "jumped":
@@ -4252,6 +4339,9 @@ class InstaPy:
 
                                     if unfollow_state is True:
                                         inap_unfollow += 1
+
+                            if break_loop:
+                                break
 
                         except NoSuchElementException as err:
                             self.logger.error("Invalid Page: {}".format(err))
@@ -4301,6 +4391,7 @@ class InstaPy:
         """
 
         if enabled is False:
+            self.blacklist["enabled"] = False
             self.dont_include = self.white_list
             return
 
@@ -4827,6 +4918,7 @@ class InstaPy:
         commented = 0
         followed = 0
         not_valid_users = 0
+        break_loop = False
 
         for index, url in enumerate(urls):
             if self.jumps["consequent"]["likes"] >= self.jumps["limit"]["likes"]:
@@ -4838,6 +4930,15 @@ class InstaPy:
                 self.jumps["consequent"]["likes"] = 0
                 # we have not used `quotient_breach` here
                 # cos this method has just one iterator
+                break
+            if self.jumps["consequent"]["blacklist"] >= self.jumps["limit"]["blacklist"]:
+                self.logger.warning(
+                    "--> Blacklist quotient reached its peak!\t~leaving "
+                    "\t~leaving Interact-By-URL activity\n"
+                )
+                self.quotient_breach = True
+                # reset jump counter after a breach report
+                self.jumps["consequent"]["blacklist"] = 0
                 break
 
             if "https://www.instagram.com/p/" not in url:
@@ -4991,8 +5092,10 @@ class InstaPy:
 
                     elif msg == "already liked":
                         already_liked += 1
+                        self.jumps["consequent"]["likes"] += 1
 
                     elif msg == "block on likes":
+                        break_loop = True
                         break
 
                     elif msg == "jumped":
@@ -5004,6 +5107,9 @@ class InstaPy:
                         "--> Image not liked: {}".format(reason.encode("utf-8"))
                     )
                     inap_img += 1
+
+                if break_loop:
+                    break
 
             except NoSuchElementException as err:
                 self.logger.error("Invalid Page: {}".format(err))
@@ -5325,6 +5431,7 @@ class InstaPy:
         already_followed_init = self.already_followed
         inap_img_init = self.inap_img
         not_valid_users_init = self.not_valid_users
+        break_loop = False
 
         overall_posts_count = 0
         self.quotient_breach = False
@@ -5468,6 +5575,7 @@ class InstaPy:
 
                 elif msg == "already liked":
                     self.already_liked += 1
+                    self.jumps["consequent"]["post_likes"] += 1
 
                 elif msg == "block on likes":
                     break
