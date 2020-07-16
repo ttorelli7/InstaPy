@@ -1537,7 +1537,7 @@ def check_authorization(browser, username, method, logger, notify=True):
                 activity_counts_new = None
 
         try:
-            new_story = browser.find_element_by_xpath("//svg[@aria-label='New Story']")
+            new_story = browser.find_element_by_xpath("//textarea[@aria-label='New Post']")
         except NoSuchElementException:
             new_story = None
             pass
