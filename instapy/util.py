@@ -958,16 +958,9 @@ def click_element(browser, element, tryNum=0):
         # click attempt failed
         # try something funky and try again
 
-        if tryNum == 0 and element.get_attribute("class") == '':
-            browser.execute_script("arguments[0].scrollIntoView();", element)
-
-        elif tryNum == 0:
+        if tryNum == 0:
             # try scrolling the element into view
-            browser.execute_script(
-                "document.getElementsByClassName('"
-                + element.get_attribute("class")
-                + "')[0].scrollIntoView({ inline: 'center' });"
-            )
+            browser.execute_script("arguments[0].scrollIntoView();", element)
 
         elif tryNum == 1:
             # well, that didn't work, try scrolling to the top and then
