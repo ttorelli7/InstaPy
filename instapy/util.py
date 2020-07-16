@@ -958,7 +958,10 @@ def click_element(browser, element, tryNum=0):
         # click attempt failed
         # try something funky and try again
 
-        if tryNum == 0:
+        if tryNum == 0 and element.get_attribute("class") == '':
+            browser.execute_script("arguments[0].scrollIntoView();", element)
+
+        elif tryNum == 0:
             # try scrolling the element into view
             browser.execute_script(
                 "document.getElementsByClassName('"
@@ -1487,6 +1490,8 @@ def check_authorization(browser, username, method, logger, notify=True):
     """ Check if user is NOW logged in """
     if notify is True:
         logger.info("Checking if '{}' is logged in...".format(username))
+
+    sleep(1)
 
     # different methods can be added in future
     if method == "activity counts":
