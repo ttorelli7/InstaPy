@@ -1573,19 +1573,6 @@ class InstaPy:
                                     )
                                     following = random.randint(0, 100) <= self.follow_percentage
 
-                                    if self.use_clarifai and (following or commenting):
-                                        try:
-                                            (
-                                                checked_img,
-                                                temp_comments,
-                                                clarifai_tags,
-                                            ) = self.query_clarifai()
-
-                                        except Exception as err:
-                                            self.logger.error(
-                                                "Image check error: {}".format(err)
-                                            )
-
                                     # comments
                                     if (
                                         self.do_comment
@@ -1617,6 +1604,17 @@ class InstaPy:
                                     else:
                                         self.logger.info("--> Not commented")
                                         sleep(1)
+
+                                    # following
+                                    if (
+                                        self.do_follow
+                                        and user_name not in self.dont_include
+                                        and checked_img
+                                        and following
+                                        and not follow_restriction(
+                                            "read", user_name, self.follow_times, self.logger
+                                        )
+                                    ):
 
                                         if self.delimit_commenting:
                                             (
@@ -2020,19 +2018,6 @@ class InstaPy:
                                     )
                                     following = random.randint(0, 100) <= self.follow_percentage
 
-                                    if self.use_clarifai and (following or commenting):
-                                        try:
-                                            (
-                                                checked_img,
-                                                temp_comments,
-                                                clarifai_tags,
-                                            ) = self.query_clarifai()
-
-                                        except Exception as err:
-                                            self.logger.error(
-                                                "Image check error: {}".format(err)
-                                            )
-
                                     # comments
                                     if (
                                         self.do_comment
@@ -2065,49 +2050,49 @@ class InstaPy:
                                         self.logger.info("--> Not commented")
                                         sleep(1)
 
-                                    # following
-                                    if (
-                                        self.do_follow
-                                        and user_name not in self.dont_include
-                                        and checked_img
-                                        and following
-                                        and not follow_restriction(
-                                            "read", user_name, self.follow_times, self.logger
-                                        )
-                                    ):
+                                            # following
+                                            if (
+                                                self.do_follow
+                                                and user_name not in self.dont_include
+                                                and checked_img
+                                                and following
+                                                and not follow_restriction(
+                                                    "read", user_name, self.follow_times, self.logger
+                                                )
+                                            ):
 
-                                        follow_state, msg = follow_user(
-                                            self.browser,
-                                            "post",
-                                            self.username,
-                                            user_name,
-                                            None,
-                                            self.blacklist,
-                                            self.logger,
-                                            self.logfolder,
-                                        )
-                                        if follow_state is True:
-                                            followed += 1
-                                    else:
-                                        self.logger.info("--> Not following")
-                                        sleep(1)
+                                                follow_state, msg = follow_user(
+                                                    self.browser,
+                                                    "post",
+                                                    self.username,
+                                                    user_name,
+                                                    None,
+                                                    self.blacklist,
+                                                    self.logger,
+                                                    self.logfolder,
+                                                )
+                                                if follow_state is True:
+                                                    followed += 1
+                                            else:
+                                                self.logger.info("--> Not following")
+                                                sleep(1)
 
-                                    # interactions (if any)
-                                    if interact:
-                                        self.logger.info(
-                                            "--> User gonna be interacted: '{}'".format(
-                                                user_name
-                                            )
-                                        )
+                                            # interactions (if any)
+                                            if interact:
+                                                self.logger.info(
+                                                    "--> User gonna be interacted: '{}'".format(
+                                                        user_name
+                                                    )
+                                                )
 
-                                        # disable revalidating user in like_by_users
-                                        with self.feature_in_feature("like_by_users", False):
-                                            self.like_by_users(
-                                                user_name,
-                                                self.user_interact_amount,
-                                                self.user_interact_random,
-                                                self.user_interact_media,
-                                            )
+                                                # disable revalidating user in like_by_users
+                                                with self.feature_in_feature("like_by_users", False):
+                                                    self.like_by_users(
+                                                        user_name,
+                                                        self.user_interact_amount,
+                                                        self.user_interact_random,
+                                                        self.user_interact_media,
+                                                    )
 
                                 elif msg == "already liked":
                                     already_liked += 1
@@ -6001,6 +5986,9 @@ class InstaPy:
             return []
 
         return target_list
+<<<<<<< HEAD
 
     def timeline_post_media_by_path(self, path: str = ""):
         post_media_by_path(self.browser, path)
+=======
+>>>>>>> cac8f713937647b89a02894d1e4121d38de2085c
