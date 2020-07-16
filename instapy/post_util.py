@@ -6,10 +6,19 @@ from selenium.webdriver.common.action_chains import ActionChains
 import os
 from pathlib import Path
 import glob
+import pathlib
+
+def delete_folder(pth) :
+    for sub in pth.iterdir() :
+        if sub.is_dir() :
+            delete_folder(sub)
+        else :
+            sub.unlink()
+    pth.rmdir() # if you just want to delete dir content, remove this line
 
 def post_media(browser, file="", caption=""):
     new_post_btn = browser.find_element_by_xpath("//div[@role='menuitem']").click()
-    sleep(1)
+    #sleep(3)
     pyautogui.write(file)
     pyautogui.press('return')
     next_btn = browser.find_element_by_xpath("//button[contains(text(),'Next')]").click()
@@ -20,25 +29,40 @@ def post_media(browser, file="", caption=""):
     sleep(5)
 
 def post_media_by_path(browser, path=""):
-    paths = sorted(Path(path).iterdir(), key=os.path.dirname)
-    for path in paths:
-        if path.is_file():
+    last_id_file = str(path) + "/last_media_published_id.txt"
+    last_id = 0
+
+    if os.path.exists(last_id_file):
+        f_in = open(last_id_file, "r+")
+        last_id = int(f_in.read())
+        f_in.close()
+
+    folders = reversed(sorted(Path(path).iterdir(), key=os.path.dirname))
+    for folder in folders:
+        if folder.is_file():
             continue
-        subpaths = sorted(Path(path).iterdir(), key=os.path.dirname)
-        for subpath in subpaths:
-            if subpath.is_file():
+        current_id = int(str(folder).replace(path, ''))
+        if current_id <= last_id:
+            continue
+        files = sorted(Path(folder).iterdir(), key=os.path.dirname)
+        caption = Path(str(folder) + "/caption_new.txt").read_text()
+        #print(caption)
+        medias = []
+        for file in files:
+            file_extension = os.path.splitext(file)
+            if file_extension[1] not in [".jpg"]:
                 continue
-            #print(subpath)
-            os.chdir(subpath)
-            caption = ""
-            media = ""
-            for file in glob.glob("*"):
-                file_extension = os.path.splitext(file)
-                if file_extension[1] == ".txt":
-                    caption = Path(str(subpath) + "/" + str(file)).read_text()
-                else:
-                    media = str(subpath) + "/" + str(file)
+            media = str(file)
+            medias.append(media)
+        if len(medias) > 1:
+            continue
+        for media in medias:
             post_media(browser, media, caption)
+        f_out = open(last_id_file, "w+")
+        f_out.write(str(current_id))
+        f_out.close
+        delete_folder(folder)
+        break
 
     #image_path = '/var/www/html/instapost/content/emagrecendonasuacasa/2265745190100786720/1.jpg'
     #input = browser.find_element_by_xpath("//input[@type='file']")

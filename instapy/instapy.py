@@ -116,7 +116,8 @@ class InstaPy:
         split_db: bool = False,
         bypass_security_challenge_using: str = "email",
         want_check_browser: bool = True,
-        save_account_progress: bool = True
+        save_account_progress: bool = True,
+        load_cookie: bool = True
     ):
         print("InstaPy Version: {}".format(__version__))
         cli_args = parse_cli_args()
@@ -149,6 +150,7 @@ class InstaPy:
         self.disable_image_load = disable_image_load
         self.bypass_security_challenge_using = bypass_security_challenge_using
         self.save_account_progress = save_account_progress
+        self.load_cookie = load_cookie
 
         # choose environment over static typed credentials
         self.username = os.environ.get("INSTA_USER") or username
@@ -413,6 +415,7 @@ class InstaPy:
             self.proxy_address,
             self.bypass_security_challenge_using,
             self.want_check_browser,
+            self.load_cookie
         ):
             message = (
                 "Unable to login to Instagram! "
@@ -4986,7 +4989,7 @@ class InstaPy:
                         liked_img,
                     )
 
-                    if like_state is True:
+                    if like_state is True or self.do_comment:
                         liked_img += 1
                         # reset jump counter after a successful like
                         self.jumps["consequent"]["likes"] = 0

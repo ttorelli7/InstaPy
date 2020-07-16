@@ -273,6 +273,7 @@ def login_user(
     proxy_address,
     security_code_to_phone,
     want_check_browser,
+    load_cookie
 ):
     """Logins the user with the given username and password"""
     assert username, "Username not provided"
@@ -289,14 +290,15 @@ def login_user(
     cookie_loaded = False
 
     # try to load cookie from username
-    try:
-        for cookie in pickle.load(
-            open("{0}{1}_cookie.pkl".format(logfolder, username), "rb")
-        ):
-            browser.add_cookie(cookie)
-            cookie_loaded = True
-    except (WebDriverException, OSError, IOError):
-        print("Cookie file not found, creating cookie...")
+    if load_cookie:
+        try:
+            for cookie in pickle.load(
+                open("{0}{1}_cookie.pkl".format(logfolder, username), "rb")
+            ):
+                browser.add_cookie(cookie)
+                cookie_loaded = True
+        except (WebDriverException, OSError, IOError):
+            print("Cookie file not found, creating cookie...")
 
     # force refresh after cookie load or check_authorization() will FAIL
     reload_webpage(browser)
