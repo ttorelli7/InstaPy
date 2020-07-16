@@ -1536,7 +1536,13 @@ def check_authorization(browser, username, method, logger, notify=True):
             except WebDriverException:
                 activity_counts_new = None
 
-        if activity_counts is None and activity_counts_new is None:
+        try:
+            new_story = browser.find_element_by_xpath("//svg[@aria-label='New Story']")
+        except NoSuchElementException:
+            new_story = None
+            pass
+
+        if activity_counts is None and activity_counts_new is None and new_story is None:
             if notify is True:
                 logger.critical("--> '{}' is not logged in!\n".format(username))
             return False

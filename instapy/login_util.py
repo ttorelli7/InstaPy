@@ -267,7 +267,7 @@ def login_user(
     # cookie has been LOADED, so the user SHOULD be logged in
     # check if the user IS logged in
     login_state = check_authorization(
-        browser, username, "activity counts", logger, False
+        browser, username, "activity counts", logger, True
     )
     if login_state is True:
         dismiss_notification_offer(browser, logger)
