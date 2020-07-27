@@ -259,6 +259,7 @@ class InstaPy:
         self.min_posts = None
         self.skip_business_categories = []
         self.skip_bio_keyword = []
+        self.mandatory_bio_keywords = []
         self.dont_skip_business_categories = []
         self.skip_business = False
         self.skip_non_business = False
@@ -776,7 +777,7 @@ class InstaPy:
                 bbox["lat_max"],
                 radius,
             )
-            url = "https://query.displaypurposes.com/local/?bbox={}".format(bbox_url)
+            url = "https://displaypurposes.com/local/?bbox={}".format(bbox_url)
 
             req = requests.get(url)
             data = json.loads(req.text)
@@ -1360,6 +1361,7 @@ class InstaPy:
             self.skip_business_categories,
             self.dont_skip_business_categories,
             self.skip_bio_keyword,
+            self.mandatory_bio_keywords,
             self.logger,
             self.logfolder,
         )
@@ -1385,9 +1387,10 @@ class InstaPy:
         skip_business: bool = False,
         business_percentage: int = 100,
         skip_business_categories: list = [],
-        skip_bio_keyword: list = [],
         dont_skip_business_categories: list = [],
         skip_non_business: bool = False,
+        skip_bio_keyword: list = [],
+        mandatory_bio_keywords: list = [],
     ):
 
         self.skip_business = skip_business
@@ -1398,6 +1401,7 @@ class InstaPy:
         self.skip_private_percentage = private_percentage
         self.skip_non_business = skip_non_business
         self.skip_bio_keyword = skip_bio_keyword
+        self.mandatory_bio_keywords = mandatory_bio_keywords
         if skip_business:
             self.skip_business_categories = skip_business_categories
             if len(skip_business_categories) == 0:
