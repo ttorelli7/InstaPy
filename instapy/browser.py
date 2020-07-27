@@ -5,6 +5,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.firefox.options import Options as Firefox_Options
 from selenium.webdriver import Remote
 from webdriverdownloader import GeckoDriverDownloader
+from random_user_agent.user_agent import UserAgent
 
 # general libs
 import os
@@ -73,6 +74,17 @@ def set_selenium_local_session(
         "Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 "
         "(KHTML, like Gecko) FxiOS/18.1 Mobile/16B92 Safari/605.1.15"
     )
+    '''
+    user_agent_rotator = UserAgent()
+    user_agents = user_agent_rotator.get_user_agents()
+    user_agent = user_agent_rotator.get_random_user_agent()
+    print(user_agent)
+    '''
+    '''
+    user_agent = (
+        "Mozilla/5.0 (Linux; U; Android 4.2.2; en-US; Panasonic P81 Build/JDQ39) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/11.1.0.882 U3/0.8.0 Mobile Safari/534.30"
+    )
+    '''
 
     # keep user_agent
     Settings.user_agent = user_agent
