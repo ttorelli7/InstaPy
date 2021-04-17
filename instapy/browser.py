@@ -1,20 +1,17 @@
-# selenium
-from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.firefox.options import Options as Firefox_Options
-from selenium.webdriver import Remote
-from selenium.common.exceptions import UnexpectedAlertPresentException
-from webdriverdownloader import GeckoDriverDownloader
-from random_user_agent.user_agent import UserAgent
-
-# general libs
+# import built-in & third-party modules
 import os
 import zipfile
 import shutil
-from os.path import sep
 
-# local project
+from os.path import sep
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.firefox.options import Options as Firefox_Options
+from selenium.webdriver import Remote
+from webdriverdownloader import GeckoDriverDownloader
+from random_user_agent.user_agent import UserAgent
+
+# import InstaPy modules
 from .util import interruption_handler
 from .util import highlight_print
 from .util import emergency_exit
@@ -24,6 +21,11 @@ from .util import web_address_navigator
 from .file_manager import use_assets
 from .settings import Settings
 from .time_util import sleep
+
+# import exceptions
+from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import UnexpectedAlertPresentException
+
 
 def get_geckodriver():
     # prefer using geckodriver from path
@@ -64,6 +66,7 @@ def set_selenium_local_session(
     browser_executable_path,
     logfolder,
     logger,
+    geckodriver_log_level,
 ):
     """Starts local session for a selenium server.
     Default case scenario."""
@@ -72,21 +75,19 @@ def set_selenium_local_session(
     err_msg = ""
 
     # set Firefox Agent to mobile agent
-    user_agent = (
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 "
-        "(KHTML, like Gecko) FxiOS/18.1 Mobile/16B92 Safari/605.1.15"
-    )
+    #user_agent = (
+    #    "Mozilla/5.0 (iPhone; CPU iPhone OS 12_1 like Mac OS X) AppleWebKit/605.1.15 "
+    #    "(KHTML, like Gecko) FxiOS/18.1 Mobile/16B92 Safari/605.1.15"
+    #)
     
-    user_agent_rotator = UserAgent(hardware_types=['mobile'])
-    user_agents = user_agent_rotator.get_user_agents()
-    user_agent = user_agent_rotator.get_random_user_agent()
-    print(user_agent)
+    #user_agent_rotator = UserAgent(hardware_types=['mobile'])
+    #user_agents = user_agent_rotator.get_user_agents()
+    #user_agent = user_agent_rotator.get_random_user_agent()
+    #print(user_agent)
     
-    '''
     user_agent = (
         "Mozilla/5.0 (Linux; U; Android 4.2.2; en-US; Panasonic P81 Build/JDQ39) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 UCBrowser/11.1.0.882 U3/0.8.0 Mobile Safari/534.30"
     )
-    '''
 
     # keep user_agent
     Settings.user_agent = user_agent
@@ -104,9 +105,13 @@ def set_selenium_local_session(
     if browser_executable_path is not None:
         firefox_options.binary = browser_executable_path
 
+    # set "info" by default
+    # set "trace" for debubging, Development only
+    firefox_options.log.level = geckodriver_log_level
+
     # set English language
     firefox_profile.set_preference("intl.accept_languages", "en-US")
-    firefox_profile.set_preference("general.useragent.override", user_agent)
+    firefox_profile.set_preference("general.useragent.override", Settings.user_agent)
 
     if disable_image_load:
         # permissions.default.image = 2: Disable images load,
@@ -154,9 +159,10 @@ def set_selenium_local_session(
     browser.implicitly_wait(page_delay)
 
     sleep(1)
-    # set mobile viewport (iPhone X)
+    # Apple iPhone X:      375, 812
+    # Apple iPhone XS Max: 414, 896
     try:
-        browser.set_window_size(375, 812)
+        browser.set_window_size(414, 896)
     except UnexpectedAlertPresentException as exc:
         logger.exception(
             "Unexpected alert on resizing web browser!\n\t"
@@ -176,7 +182,7 @@ def proxy_authentication(browser, logger, proxy_username, proxy_password):
 
     # FIXME: https://github.com/SeleniumHQ/selenium/issues/7239
     # this feauture is not working anymore due to the Selenium bug report above
-    logger.warn(
+    logger.warning(
         "Proxy Authentication is not working anymore due to the Selenium bug "
         "report: https://github.com/SeleniumHQ/selenium/issues/7239"
     )
@@ -193,7 +199,7 @@ def proxy_authentication(browser, logger, proxy_username, proxy_password):
         )
         alert_popup.accept()
     except Exception:
-        logger.warn("Unable to proxy authenticate")
+        logger.warning("Unable to proxy authenticate")
 
 
 def close_browser(browser, threaded_session, logger):
@@ -221,9 +227,9 @@ def close_browser(browser, threaded_session, logger):
 
 def retry(max_retry_count=3, start_page=None):
     """
-        Decorator which refreshes the page and tries to execute the function again.
-        Use it like that: @retry() => the '()' are important because its a decorator
-        with params.
+    Decorator which refreshes the page and tries to execute the function again.
+    Use it like that: @retry() => the '()' are important because its a decorator
+    with params.
     """
 
     def real_decorator(org_func):

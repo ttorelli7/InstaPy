@@ -1,8 +1,11 @@
+# import built-in & third-party modules
 import time
 import math
+import requests
+
 from random import randint
-from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import WebDriverException
+
+# import InstaPy modules
 from .util import click_element
 from .util import web_address_navigator
 from .util import update_activity
@@ -11,7 +14,9 @@ from .settings import Settings
 from .xpath import read_xpath
 import random
 
-import requests
+# import exceptions
+from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import WebDriverException
 
 
 def get_story_data(browser, elem, action_type, logger, simulate=False, comments: list = None):
@@ -46,7 +51,7 @@ def get_story_data(browser, elem, action_type, logger, simulate=False, comments:
                 elem = ""
             except WebDriverException:
                 logger.error(
-                    "---> Sorry, this page isn't available!\t~either "
+                    "--> Sorry, this page isn't available!\t~either "
                     + "link is broken or page is removed\n"
                 )
                 return {"status": "not_ok", "reels_cnt": 0}
@@ -82,7 +87,11 @@ def get_story_data(browser, elem, action_type, logger, simulate=False, comments:
 
         session.cookies.set(**all_args)
 
-    headers = {"User-Agent": Settings.user_agent, "X-Requested-With": "XMLHttpRequest"}
+    headers = {
+        "User-Agent": Settings.user_agent,
+        "X-Requested-With": "XMLHttpRequest",
+        "SameSite": "Strict",
+    }
 
     data = session.get(graphql_query_url, headers=headers)
     response = data.json()
@@ -116,6 +125,7 @@ def get_story_data(browser, elem, action_type, logger, simulate=False, comments:
                             "X-CSRFToken": csrftoken,
                             "X-Requested-With": "XMLHttpRequest",
                             "Content-Type": "application/x-www-form-urlencoded",
+                            "SameSite": "Strict",
                         }
                         response = session.post(
                             "https://www.instagram.com/stories/reel/seen",
@@ -204,8 +214,8 @@ def reply_story(browser, comments: list = None):
 
 def watch_story(browser, elem, logger, action_type, simulate=False, comments: list = None):
     """
-        Load Stories, and watch it until there is no more stores
-        to watch for the related element
+    Load Stories, and watch it until there is no more stores
+    to watch for the related element
     """
 
     # make sure we work with a lower case elem
@@ -229,12 +239,12 @@ def watch_story(browser, elem, logger, action_type, simulate=False, comments: li
     if story_data["reels_cnt"] == 0:
         # nothing to watch, there is no stories
         logger.info(
-            "no stories to watch (either there is none) or we have already watched everything"
+            "No stories to watch (either there is none) or we have already watched everything"
         )
         return 0
 
     logger.info(
-        "watched {} reels from {}: {}".format(
+        "Watched {} reels from {}: {}".format(
             story_data["reels_cnt"], action_type, elem.encode("utf-8")
         )
     )
