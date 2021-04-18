@@ -1,20 +1,24 @@
+# import built-in & third-party modules
 import time
 import math
+import requests
+
 from random import randint
-from selenium.common.exceptions import NoSuchElementException
-from selenium.common.exceptions import WebDriverException
+
+# import InstaPy modules
 from .util import click_element
 from .util import web_address_navigator
 from .util import update_activity
 from .util import get_action_delay
 from .settings import Settings
 from .xpath import read_xpath
-import random
 
-import requests
+# import exceptions
+from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import WebDriverException
 
 
-def get_story_data(browser, elem, action_type, logger, simulate=False, comments: list = None):
+def get_story_data(browser, elem, action_type, logger, simulate=False):
     """
     get the JSON data from the graphql URL
     output the amount of segments we can watch
@@ -46,7 +50,7 @@ def get_story_data(browser, elem, action_type, logger, simulate=False, comments:
                 elem = ""
             except WebDriverException:
                 logger.error(
-                    "---> Sorry, this page isn't available!\t~either "
+                    "--> Sorry, this page isn't available!\t~either "
                     + "link is broken or page is removed\n"
                 )
                 return {"status": "not_ok", "reels_cnt": 0}
@@ -82,7 +86,11 @@ def get_story_data(browser, elem, action_type, logger, simulate=False, comments:
 
         session.cookies.set(**all_args)
 
-    headers = {"User-Agent": Settings.user_agent, "X-Requested-With": "XMLHttpRequest"}
+    headers = {
+        "User-Agent": Settings.user_agent,
+        "X-Requested-With": "XMLHttpRequest",
+        "SameSite": "Strict",
+    }
 
     data = session.get(graphql_query_url, headers=headers)
     response = data.json()
@@ -116,6 +124,7 @@ def get_story_data(browser, elem, action_type, logger, simulate=False, comments:
                             "X-CSRFToken": csrftoken,
                             "X-Requested-With": "XMLHttpRequest",
                             "Content-Type": "application/x-www-form-urlencoded",
+                            "SameSite": "Strict",
                         }
                         response = session.post(
                             "https://www.instagram.com/stories/reel/seen",
@@ -143,69 +152,39 @@ def get_story_data(browser, elem, action_type, logger, simulate=False, comments:
 
                 click_element(browser, story_elem)
 
-                count = 0
-                browser.implicitly_wait(2)
                 logger.info("Watching stories...")
                 for item in response["data"]["reels_media"][0]["items"]:
-                    count += 1
                     if item["taken_at_timestamp"] <= seen:
                         continue
                     else:
-                        reels_cnt += 1
-                        index += 1
-                        if count == len(response["data"]["reels_media"][0]["items"]):
-                            reply_story(browser, comments=comments)
-                        time.sleep(1)
-                        try:
-                            next_elem = browser.find_element_by_xpath('/html/body/div[1]/section/div/div/section/div[1]/div/div/div/div[2]/div/div/button[4]')
-                        except NoSuchElementException:
+                        time.sleep(2)
+                        if index == 1:
                             try:
-                                next_elem = browser.find_element_by_xpath('/html/body/div[1]/section/div/div/section/div[1]/div/div/div/div/div/div[1]/button[4]')
+                                next_elem = browser.find_element_by_xpath(
+                                    read_xpath(watch_story.__name__, "next_first")
+                                )
+                            except NoSuchElementException:
+                                continue
+                        else:
+                            try:
+                                next_elem = browser.find_element_by_xpath(
+                                    read_xpath(watch_story.__name__, "next")
+                                )
                             except NoSuchElementException:
                                 continue
                         click_element(browser, next_elem)
-                
-                if reels_cnt > 0:
-                    try:
-                        close_elem = browser.find_element_by_xpath('/html/body/div[1]/section/div/div/section/div[2]/header/div[2]/div[2]/button/span')
-                        click_element(browser, close_elem)
-                    except:
-                        pass
-
-                browser.implicitly_wait(25)
+                        reels_cnt += 1
+                        index += 1
 
             return {"status": "ok", "reels_cnt": reels_cnt}
     else:
         return {"status": "not_ok", "reels_cnt": 0}
 
-def reply_story(browser, comments: list = None):
-    try:
-        rand_comment = random.choice(comments)
-        comment_input = browser.find_element_by_xpath("//textarea[@placeholder='Send Message']")
-        click_element(browser, comment_input)
 
-        reaction_button = ''
-        reactions = ["😂", "😮", "😍", "😢", "👏", "🔥", "🎉", "💯"]
-        index = 0
-        for emoji in reactions:
-            index += 1
-            if rand_comment == emoji:
-                reaction_button = browser.find_element_by_xpath("/html/body/div[1]/section/div/div/section/div[2]/footer/div/div[2]/div/div/div[" + str(index) + "]/button/span")
-        
-        time.sleep(1)
-        if reaction_button:
-            click_element(browser, reaction_button)
-        else:
-            comment_input.send_keys(rand_comment)
-            comment_button = browser.find_element_by_xpath("//button[text()='Send']")
-            click_element(browser, comment_button)
-    except NoSuchElementException as err:
-        print("--> Unable to reply story...")
-
-def watch_story(browser, elem, logger, action_type, simulate=False, comments: list = None):
+def watch_story(browser, elem, logger, action_type, simulate=False):
     """
-        Load Stories, and watch it until there is no more stores
-        to watch for the related element
+    Load Stories, and watch it until there is no more stores
+    to watch for the related element
     """
 
     # make sure we work with a lower case elem
@@ -221,7 +200,7 @@ def watch_story(browser, elem, logger, action_type, simulate=False, comments: li
     # wait for the page to load
     time.sleep(randint(2, 6))
     # order is important here otherwise we are not on the page of the story we want to watch
-    story_data = get_story_data(browser, elem, action_type, logger, simulate, comments=comments)
+    story_data = get_story_data(browser, elem, action_type, logger, simulate)
 
     if story_data["status"] == "not ok":
         raise NoSuchElementException
@@ -229,12 +208,12 @@ def watch_story(browser, elem, logger, action_type, simulate=False, comments: li
     if story_data["reels_cnt"] == 0:
         # nothing to watch, there is no stories
         logger.info(
-            "no stories to watch (either there is none) or we have already watched everything"
+            "No stories to watch (either there is none) or we have already watched everything"
         )
         return 0
 
     logger.info(
-        "watched {} reels from {}: {}".format(
+        "Watched {} reels from {}: {}".format(
             story_data["reels_cnt"], action_type, elem.encode("utf-8")
         )
     )

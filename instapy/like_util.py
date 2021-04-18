@@ -1,9 +1,14 @@
 """ Module that handles the like features """
+# import built-in & third-party modules
 import random
 import re
+
 from re import findall
 
-from .constants import MEDIA_PHOTO, MEDIA_CAROUSEL, MEDIA_ALL_TYPES
+# import InstaPy modules
+from .constants import MEDIA_PHOTO
+from .constants import MEDIA_CAROUSEL
+from .constants import MEDIA_ALL_TYPES
 from .time_util import sleep
 from .util import format_number
 from .util import add_user_to_blacklist
@@ -18,14 +23,15 @@ from .util import explicit_wait
 from .util import extract_text_from_element
 from .util import evaluate_mandatory_words
 from .quota_supervisor import quota_supervisor
-from .unfollow_util import get_following_status
+from .follow_util import get_following_status
 from .event import Event
+from .xpath import read_xpath
+from .comment_util import open_comment_section
 
+# import exceptions
 from selenium.common.exceptions import WebDriverException
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import StaleElementReferenceException
-
-from .xpath import read_xpath
 
 
 def get_links_from_feed(browser, amount, num_of_search, logger):
@@ -59,7 +65,7 @@ def get_links_from_feed(browser, amount, num_of_search, logger):
             logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
     except BaseException as e:
-        logger.error("link_elems error {}".format(str(e)))
+        logger.error("link_elems error \n\t{}".format(str(e).encode("utf-8")))
 
     return links
 
@@ -149,10 +155,6 @@ def get_links_for_location(
         )
     )
 
-    find_amount = amount
-    if skip_top_posts:
-        find_amount = find_amount + 9
-
     if possible_posts is not None:
         possible_posts = (
             possible_posts if not skip_top_posts else possible_posts - len(top_posts)
@@ -170,7 +172,7 @@ def get_links_for_location(
     nap = 1.5
     put_sleep = 0
     try:
-        while filtered_links in range(1, find_amount):
+        while filtered_links in range(1, amount):
             if sc_rolled > 100:
                 logger.info("Scrolled too much! ~ sleeping a bit :>")
                 sleep(600)
@@ -209,7 +211,7 @@ def get_links_for_location(
                     # by changing this number
                     if put_sleep < 1 and filtered_links <= 21:
                         logger.info(
-                            "Cor! Did you send too many requests? ~ let's " "rest some"
+                            "Cor! Did you send too many requests?  ~let's rest some"
                         )
                         sleep(600)
                         put_sleep += 1
@@ -238,9 +240,6 @@ def get_links_for_location(
         raise
 
     sleep(4)
-
-    if skip_top_posts:
-        del links[0:9]
 
     return links[:amount]
 
@@ -315,6 +314,9 @@ def get_links_for_tag(browser, tag, amount, skip_top_posts, randomize, media, lo
             )
             possible_posts = None
 
+    if skip_top_posts:
+        amount = amount + 9
+
     logger.info(
         "desired amount: {}  |  top posts [{}]: {}  |  possible posts: "
         "{}".format(
@@ -324,10 +326,6 @@ def get_links_for_tag(browser, tag, amount, skip_top_posts, randomize, media, lo
             possible_posts,
         )
     )
-
-    find_amount = amount
-    if skip_top_posts:
-        find_amount = find_amount + 9
 
     if possible_posts is not None:
         amount = possible_posts if amount > possible_posts else amount
@@ -343,7 +341,7 @@ def get_links_for_tag(browser, tag, amount, skip_top_posts, randomize, media, lo
     nap = 1.5
     put_sleep = 0
     try:
-        while filtered_links in range(1, find_amount):
+        while filtered_links in range(1, amount):
             if sc_rolled > 100:
                 logger.info("Scrolled too much! ~ sleeping a bit :>")
                 sleep(600)
@@ -382,7 +380,7 @@ def get_links_for_tag(browser, tag, amount, skip_top_posts, randomize, media, lo
                     # by changing this number
                     if put_sleep < 1 and filtered_links <= 21:
                         logger.info(
-                            "Cor! Did you send too many requests? ~ let's " "rest some"
+                            "Cor! Did you send too many requests?  ~let's rest some"
                         )
                         sleep(600)
                         put_sleep += 1
@@ -450,6 +448,11 @@ def get_links_for_username(
     if taggedImages:
         user_link = user_link + "tagged/"
 
+    # if private user, we can get links only if we following
+    following_status, _ = get_following_status(
+        browser, "profile", username, person, None, logger, logfolder
+    )
+
     # Check URL of the webpage, if it already is user's profile page,
     # then do not navigate to it again
     web_address_navigator(browser, user_link)
@@ -461,11 +464,6 @@ def get_links_for_username(
         )
         return False
 
-    # if private user, we can get links only if we following
-    following_status, _ = get_following_status(
-        browser, "profile", username, person, None, logger, logfolder
-    )
-
     # if following_status is None:
     #    browser.wait_for_valid_connection(browser, username, logger)
 
@@ -473,12 +471,17 @@ def get_links_for_username(
     #    browser.wait_for_valid_authorization(browser, username, logger)
 
     is_private = is_private_profile(browser, logger, following_status == "Following")
+
     if (
         is_private is None
         or (is_private is True and following_status not in ["Following", True])
         or (following_status == "Blocked")
     ):
-        logger.info("This user is private and we are not following")
+        logger.info(
+            "This user is private and we are not following. '{}':'{}'".format(
+                is_private, following_status
+            )
+        )
         return False
 
     # Get links
@@ -489,19 +492,14 @@ def get_links_for_username(
 
     if posts_count is not None and amount > posts_count:
         logger.info(
-            "You have requested to get {} posts from {}'s profile page BUT"
+            "You have requested to get {} posts from {}'s profile page but"
             " there only {} posts available :D".format(amount, person, posts_count)
         )
         amount = posts_count
 
     while len(links) < amount:
         initial_links = links
-        while True:
-            try:
-                browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-                break
-            except Exception as err:
-                print("--> Unexpected error! Trying again...".format(err))
+        browser.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         # update server calls after a scroll request
         update_activity(browser, state=None)
         sleep(0.66)
@@ -598,6 +596,8 @@ def check_link(
 
     # Gets the description of the post's link and checks for the dont_like tags
     graphql = "graphql" in post_page
+    location_name = None
+
     if graphql:
         media = post_page["graphql"]["shortcode_media"]
         is_video = media["is_video"]
@@ -691,8 +691,8 @@ def check_link(
                 True,
                 user_name,
                 is_video,
-                "Mandatory language not " "fulfilled",
-                "Not mandatory " "language",
+                "Mandatory language not fulfilled",
+                "Not mandatory language",
             )
 
     # Append location to image_text so we can search through both in one go
@@ -706,8 +706,8 @@ def check_link(
                 True,
                 user_name,
                 is_video,
-                "Mandatory words not " "fulfilled",
-                "Not mandatory " "likes",
+                "Mandatory words not fulfilled",
+                "Not mandatory likes",
             )
 
     image_text_lower = [x.lower() for x in image_text]
@@ -758,8 +758,25 @@ def like_image(browser, username, blacklist, logger, logfolder, total_liked_img)
     if quota_supervisor("likes") == "jump":
         return False, "jumped"
 
+    media = "Image"  # by default
     like_xpath = read_xpath(like_image.__name__, "like")
     unlike_xpath = read_xpath(like_image.__name__, "unlike")
+    play_xpath = read_xpath(like_image.__name__, "play")
+
+    play_elem = browser.find_elements_by_xpath(play_xpath)
+    if len(play_elem) == 1:
+        # This is because now IG is not only Images, User can share Images and
+        # Videos in one post at the same time, it could be Image -> Video or
+        # Video -> Image so we will try to Like the post like one object.
+        media = "Video"
+        comment = read_xpath(open_comment_section.__name__, "comment_elem")
+        element = browser.find_element_by_xpath(comment)
+
+        # Now, move until 'Comment' section to determine the status of post
+        # Notice that some videos comes from TikTok and could have larger size
+        # c'est la vie...
+        logger.info("--> Found 'Play' button for a video, trying to like it")
+        browser.execute_script("arguments[0].scrollIntoView(true);", element)
 
     # find first for like element
     like_elem = browser.find_elements_by_xpath(like_xpath)
@@ -774,7 +791,7 @@ def like_image(browser, username, blacklist, logger, logfolder, total_liked_img)
         liked_elem = browser.find_elements_by_xpath(unlike_xpath)
 
         if len(liked_elem) == 1:
-            logger.info("--> Image Liked!")
+            logger.info("--> {} liked!".format(media))
             Event().liked(username)
             update_activity(
                 browser, action="likes", state=None, logfolder=logfolder, logger=logger
@@ -790,21 +807,23 @@ def like_image(browser, username, blacklist, logger, logfolder, total_liked_img)
             naply = get_action_delay("like")
             sleep(naply)
 
-            # after every 10 liked image do checking on the block
-            if total_liked_img % 10 == 0 and not verify_liked_image(browser, logger):
+            # after liking an image we do check if liking activity was blocked
+            if not verify_liked_image(browser, logger):
                 return False, "block on likes"
 
             return True, "success"
 
         else:
             # if like not seceded wait for 2 min
-            logger.info("--> Image was not able to get Liked! maybe blocked ?")
+            logger.info(
+                "--> {} was not able to get liked! maybe blocked?".format(media)
+            )
             sleep(120)
 
     else:
         liked_elem = browser.find_elements_by_xpath(unlike_xpath)
         if len(liked_elem) == 1:
-            logger.info("--> Image already liked!")
+            logger.info("--> {} already liked!".format(media))
             return False, "already liked"
 
     logger.info("--> Invalid Like Element!")
@@ -822,9 +841,7 @@ def verify_liked_image(browser, logger):
     if len(like_elem) == 1:
         return True
     else:
-        logger.info(
-            "-------- WARNING! Image was NOT liked! " "You have a BLOCK on likes!"
-        )
+        logger.warning("--> Image was NOT liked! You have a BLOCK on likes!")
         return False
 
 
@@ -864,13 +881,15 @@ def get_tags(browser, url):
 
 def get_links(browser, page, logger, media, element):
     links = []
+    post_href = None
+
     try:
         # Get image links in scope from hashtag, location and other pages
         link_elems = element.find_elements_by_xpath('//a[starts-with(@href, "/p/")]')
-        sleep(2)
+        sleep(random.randint(2, 5))
+
         if link_elems:
             for link_elem in link_elems:
-                post_href = ''
                 try:
                     post_href = link_elem.get_attribute("href")
                     post_elem = element.find_elements_by_xpath(
@@ -891,21 +910,28 @@ def get_links(browser, page, logger, media, element):
 
                         if post_category in media:
                             links.append(post_href)
-                except WebDriverException as err:
-                    print(err)
-                    logger.info(
-                        "Cannot detect post media type. Skip {}".format(post_href)
-                    )
+
+                except WebDriverException:
+                    # If "post_href" is None skip the logger to avoid confusion,
+                    # the links that are not empty will be catched into the next
+                    # loop. Other case, the "post_href" is not empty and needs
+                    # to be displayed to the STDOUT fo further review.
+                    if post_href:
+                        logger.info(
+                            "Cannot detect post media type. Skip {}".format(post_href)
+                        )
         else:
             logger.info("'{}' page does not contain a picture".format(page))
+
     except BaseException as e:
-        logger.error("link_elems error {}".format(str(e)))
+        logger.error("link_elems error \n\t{}".format(str(e).encode("utf-8")))
+
     return links
 
 
 def verify_liking(browser, maximum, minimum, logger):
-    """ Get the amount of existing existing likes and compare it against maximum
-    & minimum values defined by user """
+    """Get the amount of existing existing likes and compare it against maximum
+    & minimum values defined by user"""
     try:
         likes_count = browser.execute_script(
             "return window.__additionalData[Object.keys(window.__additionalData)[0]].data"
@@ -1002,7 +1028,7 @@ def like_comment(browser, original_comment_text, logger):
 
     except (NoSuchElementException, StaleElementReferenceException) as exc:
         logger.error(
-            "Error occured while liking a comment.\n\t{}\n\n".format(
+            "Error occured while liking a comment.\n\t{}".format(
                 str(exc).encode("utf-8")
             )
         )
