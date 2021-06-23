@@ -340,11 +340,7 @@ def get_following(
     logger,
     logfolder,
 ):
-<<<<<<< HEAD
-    """ Get entire list of following using graphql queries. """
-=======
     """Get entire list of following using graphql queries."""
->>>>>>> upstream/master
 
     # Variables
     user_data = {}
@@ -1202,11 +1198,7 @@ def store_mutual_following(
 
 
 def load_followers_data(username, compare_by, compare_track, logger, logfolder):
-<<<<<<< HEAD
-    """ Write grabbed `followers` data into local storage """
-=======
     """Write grabbed `followers` data into local storage"""
->>>>>>> upstream/master
 
     # Variables
     tracked_filenames = []

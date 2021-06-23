@@ -891,19 +891,6 @@ def get_links(browser, page, logger, media, element):
 def verify_liking(browser, maximum, minimum, logger):
     """Get the amount of existing existing likes and compare it against maximum
     & minimum values defined by user"""
-<<<<<<< HEAD
-    try:
-        likes_count = browser.execute_script(
-            "return window.__additionalData[Object.keys(window.__additionalData)[0]].data"
-            ".graphql.shortcode_media.edge_media_preview_like.count"
-        )
-
-    except WebDriverException:
-        try:
-            browser.execute_script("location.reload()")
-            update_activity(browser, state=None)
-=======
->>>>>>> upstream/master
 
     post_page = get_additional_data(browser)
     likes_count = post_page["graphql"]["shortcode_media"]["edge_media_preview_like"][

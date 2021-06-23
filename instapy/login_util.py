@@ -569,11 +569,7 @@ def dismiss_notification_offer(browser, logger):
 
 
 def dismiss_save_information(browser, logger):
-<<<<<<< HEAD
-    """ Dismiss 'Save Your Login Info?' offer on session start """
-=======
     """Dismiss 'Save Your Login Info?' offer on session start"""
->>>>>>> upstream/master
     # This question occurs when pkl doesn't exist
     offer_elem_loc = read_xpath(dismiss_save_information.__name__, "offer_elem_loc")
     dismiss_elem_loc = read_xpath(dismiss_save_information.__name__, "dismiss_elem_loc")
@@ -684,11 +680,7 @@ def two_factor_authentication(browser, logger, security_codes):
 
 
 def accept_igcookie_dialogue(browser, logger):
-<<<<<<< HEAD
-    """ Presses 'Accept' button on IG cookie dialogue """
-=======
     """Presses 'Accept' button on IG cookie dialogue"""
->>>>>>> upstream/master
 
     offer_elem_loc = read_xpath(accept_igcookie_dialogue.__name__, "accept_button")
 

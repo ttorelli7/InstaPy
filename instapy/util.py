@@ -47,10 +47,6 @@ from selenium.common.exceptions import StaleElementReferenceException
 from selenium.common.exceptions import WebDriverException
 from selenium.common.exceptions import TimeoutException
 
-<<<<<<< HEAD
-
-=======
->>>>>>> upstream/master
 default_profile_pic_instagram = [
     "https://instagram.flas1-2.fna.fbcdn.net/vp"
     "/a8539c22ed9fec8e1c43b538b1ebfd1d/5C5A1A7A/t51.2885-19"
@@ -75,7 +71,6 @@ next_screenshot = 1
 def is_private_profile(browser, logger, following=True):
     """
     Verify id account is Private
-<<<<<<< HEAD
 
     :param browser: The selenium webdriver instance
     :param logger: the logger instance
@@ -83,35 +78,10 @@ def is_private_profile(browser, logger, following=True):
     :return: None if profile cannot be verified
     """
 
-    is_private = None
-    try:
-        is_private = browser.execute_script(
-            "return window.__additionalData[Object.keys(window.__additionalData)[0]]."
-            "data.graphql.user.is_private"
-        )
-
-    except WebDriverException:
-        try:
-            browser.execute_script("location.reload()")
-            update_activity(browser, state=None)
-=======
->>>>>>> upstream/master
-
-    :param browser: The selenium webdriver instance
-    :param logger: the logger instance
-    :param following: Not accessed
-    :return: None if profile cannot be verified
-    """
-
-<<<<<<< HEAD
-        except WebDriverException:
-            return None
-=======
     shared_data = get_shared_data(browser)
     is_private = shared_data["entry_data"]["ProfilePage"][0]["graphql"]["user"][
         "is_private"
     ]
->>>>>>> upstream/master
 
     return is_private
 
@@ -512,12 +482,6 @@ def getUserData(
     shared_data = get_shared_data(browser)
     data = shared_data["entry_data"]["ProfilePage"][0]
 
-<<<<<<< HEAD
-        data = browser.execute_script(
-            "return window._sharedData.entry_data.ProfilePage[0]." + query
-        )
-        return data
-=======
     if query.find(".") == -1:
         data = data[query]
     else:
@@ -543,7 +507,6 @@ def getMediaData(
             data = data[subobject]
 
     return data
->>>>>>> upstream/master
 
 
 def update_activity(
@@ -1590,11 +1553,7 @@ def emergency_exit(browser, username, logger):
 
 
 def load_user_id(username, person, logger, logfolder):
-<<<<<<< HEAD
-    """ Load the user ID at request from local records """
-=======
     """Load the user ID at request from local records"""
->>>>>>> upstream/master
     pool_name = "{0}{1}_followedPool.csv".format(logfolder, username)
     user_id = "undefined"
 
@@ -1687,11 +1646,7 @@ def check_authorization(browser, username, method, logger, notify=True):
 
 
 def get_username(browser, track, logger):
-<<<<<<< HEAD
-    """ Get the username of a user from the loaded profile page """
-=======
     """Get the username of a user from the loaded profile page"""
->>>>>>> upstream/master
 
     query = None
 
@@ -1728,11 +1683,7 @@ def get_username(browser, track, logger):
 
 
 def find_user_id(browser, track, username, logger):
-<<<<<<< HEAD
-    """  Find the user ID from the loaded page """
-=======
     """Find the user ID from the loaded page"""
->>>>>>> upstream/master
 
     query = None
     meta_XP = None

@@ -233,11 +233,7 @@ def verify_mandatory_words(
 def get_comments_on_post(
     browser, owner, poster, amount, post_link, ignore_users, randomize, logger
 ):
-<<<<<<< HEAD
-    """ Fetch comments data on posts """
-=======
     """Fetch comments data on posts"""
->>>>>>> upstream/master
     web_address_navigator(browser, post_link)
 
     comments = []
@@ -277,14 +273,7 @@ def get_comments_on_post(
             commenter = None
             comment = None
 
-<<<<<<< HEAD
-            data = browser.execute_script(
-                "return window.__additionalData[Object.keys(window.__additionalData)].data."
-                "graphql.shortcode_media.edge_media_to_parent_comment"
-            )
-=======
             data = getMediaData("edge_media_to_parent_comment", browser)
->>>>>>> upstream/master
             for value in data["edges"]:
                 commenter = value["node"]["owner"]["username"]
                 comment = value["node"]["text"]
@@ -352,20 +341,6 @@ def is_commenting_enabled(browser, logger):
 def get_comments_count(browser, logger):
     """Get the number of total comments in the post"""
 
-<<<<<<< HEAD
-    except Exception as e:
-        msg = "Failed to get comments' count!\n\t{}".format(str(e).encode("utf-8"))
-        return None, msg
-
-    return comments_count, "Success"
-
-
-def verify_commented_image(browser, link, owner, logger):
-    """ Fetch comments data on posts to determine if already commented """
-
-    web_address_navigator(browser, link)
-
-=======
     comments_count = getMediaData("edge_media_preview_comment.count", browser)
     return comments_count, "Success"
 
@@ -375,21 +350,13 @@ def verify_commented_image(browser, link, owner, logger):
 
     web_address_navigator(browser, link)
 
->>>>>>> upstream/master
     # wait for page fully load [IMPORTANT!]
     explicit_wait(browser, "PFL", [], logger, 10)
 
     try:
         commenter = None
         comment = None
-<<<<<<< HEAD
-        data = browser.execute_script(
-            "return window.__additionalData[Object.keys(window.__additionalData)].data."
-            "graphql.shortcode_media.edge_media_to_parent_comment"
-        )
-=======
         data = getMediaData("edge_media_to_parent_comment", browser)
->>>>>>> upstream/master
         for value in data["edges"]:
             commenter = value["node"]["owner"]["username"]
             comment = value["node"]["text"]

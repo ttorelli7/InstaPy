@@ -1305,11 +1305,7 @@ def unfollow_user(
     logger,
     logfolder,
 ):
-<<<<<<< HEAD
-    """ Unfollow a user either from the profile or post page or dialog box """
-=======
     """Unfollow a user either from the profile or post page or dialog box"""
->>>>>>> upstream/master
     # list of available tracks to unfollow in: ["profile", "post dialog]
     # check action availability
     if quota_supervisor("unfollows") == "jump":

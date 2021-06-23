@@ -82,11 +82,7 @@ def share_my_post_with_pods(postid, topic, engagement_mode, logger):
 
 
 def share_with_pods_restriction(operation, postid, limit, logger):
-<<<<<<< HEAD
-    """ Keep track of already shared posts """
-=======
     """Keep track of already shared posts"""
->>>>>>> upstream/master
     conn = None
 
     try:
@@ -156,11 +152,7 @@ def share_with_pods_restriction(operation, postid, limit, logger):
 
 
 def comment_restriction(operation, postid, limit, logger):
-<<<<<<< HEAD
-    """ Keep track of already shared posts """
-=======
     """Keep track of already shared posts"""
->>>>>>> upstream/master
     conn = None
 
     try:
